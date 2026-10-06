@@ -1,0 +1,2 @@
+dr_sbcl 62c1c25 (origin/main) shader/*.lisp
+編集は dr_sbcl 側で行い、ここへは上書きコピーで反映する。

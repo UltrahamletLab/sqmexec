@@ -16,14 +16,19 @@ sqm の配布モデル (**ソースを公開せず、バイナリ + shader.core 
   publish は sqm/gpu/ にあれば運ぶ (無ければ据え置き = 消さない)
 - `app/sdfmodeler/` — ブラウザエディタ一式 (html/js/wasm/serve.py)
 - `scenes/smoke.ssq` — 自己診断用の最小シーン
+- `shader/*.lisp` — **シェーダーのソース** (dr_sbcl/shader/ の snapshot)。
+  2026-10-06 に方針変更して配布対象にした。材質の中身を読んだり、自作シェーダーの
+  手本にするため。由来は `shader/SOURCE` (dr_sbcl のコミット) に記録する
 - 手順・ラッパ・診断・文書
 
 **入れない**
-- **レンダラーのソース (.c/.cpp/.h) とシェーダーのソース (.lisp)** —
-  本体は sqm / dr_sbcl リポジトリの持ち物。`.gitignore` が拒否する
+- **レンダラーのソース (.c/.cpp/.h)** —
+  本体は sqm リポジトリの持ち物。`.gitignore` が拒否する
+- `shader/` 以外の `.lisp` (DSL コンパイラ `interface/shader.lisp` やビルドスクリプト) —
+  dr_sbcl リポジトリの持ち物。`.gitignore` が拒否する
 - 巨大な生成データ (`*.f32`、`examples/grids/`)
 
-⚠ **`bin/` と `app/` は snapshot であって原本ではない。** 編集は必ず
+⚠ **`bin/` と `app/` と `shader/` は snapshot であって原本ではない。** 編集は必ず
 sqm / dr_sbcl 側で行い、`.\publish.ps1` でここへ流す。逆流させると
 「どちらが本物か」が分からなくなる。由来 (どのコミットから焼いたか) は
 `bin/VERSION.json` に記録される。

@@ -12,6 +12,10 @@
 *.h
 *.hpp
 *.lisp
+# 例外: シェーダーのソースは shader/ に限って配布する (2026-10-06 方針変更)。
+#       原本は dr_sbcl/shader/。ここは snapshot なので編集は dr_sbcl 側で。
+!shader/
+!shader/*.lisp
 
 # --- 実行バイナリ: bin/ 配下だけ追跡する ---
 #     このリポジトリは「clone すれば動く」ことが目的なので、配布バイナリは git に載せる。
@@ -32,7 +36,6 @@ shader.core
 /dist/
 /tools/
 /src/
-/shader/
 
 # --- 生成データ (巨大。本体リポジトリ側の持ち物) ---
 *.f32

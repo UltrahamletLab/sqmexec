@@ -1,0 +1,31 @@
+;;; wallpaper_2stripe.lisp — BMRT wallpaper_2stripe.sl port.
+;;; Pg.x+Pg.z provides stable vertical stripes on axis-aligned SDF walls, which
+;;; do not have mesh UVs. Two narrow stripes repeat at stripespacing.
+(setq wallpaper-2stripe-shader
+(make-shader wallpaper_2stripe :keyword :surface
+  (((Ka float) 0.5) ((Kd float) 0.75) ((Ks float) 0.25)
+   ((roughness float) 0.1)
+   ((stripecolor color) (make-color 1 0.5 0.5))
+   ((stripewidth float) 0.05) ((stripespacing float) 0.5)
+   ((mapping float) 2.0))
+  (enter (((Nf point) (faceforward (normalize N) I))
+          ((Vdir point) (normalize (- I)))
+          ((uu float) 0) ((ff float) 0) ((sw float) 0)
+          ((d1 float) 0) ((d2 float) 0) ((stripe float) 0)
+          ((soft float) 0.008) ((Ct color) Cs) ((pp point) Pg))
+    (if (< mapping 0.5) (setvar pp (make-point s 0 0)))
+    (if (> mapping 0.5)
+        (if (< mapping 1.5) (setvar pp Pobject)))
+    (setvar uu (/ (+ (xcomp pp) (zcomp pp)) (max stripespacing 0.0001)))
+    (setvar ff (- uu (floor uu)))
+    (setvar sw (clamp (/ stripewidth (max stripespacing 0.0001)) 0.002 0.22))
+    (setvar d1 (abs (- ff 0.43)))
+    (setvar d2 (abs (- ff 0.57)))
+    (setvar stripe (max (- 1 (smoothstep sw (+ sw soft) d1))
+                        (- 1 (smoothstep sw (+ sw soft) d2))))
+    (setvar Ct (mix Cs stripecolor stripe))
+    (setvar Oi Os)
+    (setvar Ci (* Oi (+ (* Ct (+ (* Ka (ambient)) (* Kd (diffuse Nf))))
+                         (* Ks (specular Nf Vdir roughness))))))))
+(compile-shader wallpaper-2stripe-shader)
+(append-shader wallpaper-2stripe-shader)
