@@ -1,0 +1,4 @@
+dslc — DSL シェーダーコンパイラ (実行ファイルのみ・ソース非公開)
+由来: dr_sbcl 1a9fbcb (interface/shader.lisp + tools/build-dslc.lisp)
+SBCL 2.2.9.debian で焼いた linux-x64 用
+使い方: dslc <shader-dir> <out-dir> <build-list>  (通常は ./build.sh core から呼ばれる)

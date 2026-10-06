@@ -52,3 +52,6 @@ app/sdfmodeler/.claude/
 *_out.png
 sqmexec_*.png
 .DS_Store
+
+# --- ./build.sh core (同梱 dslc) の出力。手元生成物なので追跡しない ---
+/build/

@@ -19,13 +19,20 @@ sqm の配布モデル (**ソースを公開せず、バイナリ + shader.core 
 - `shader/*.lisp` — **シェーダーのソース** (dr_sbcl/shader/ の snapshot)。
   2026-10-06 に方針変更して配布対象にした。材質の中身を読んだり、自作シェーダーの
   手本にするため。由来は `shader/SOURCE` (dr_sbcl のコミット) に記録する
+- `shader/BUILD_LIST` — shader.core に入れるシェーダー名の一覧 (dr_sbcl/build-all.lisp から生成)
+- `bin/<platform>/dslc` — **DSL シェーダーコンパイラの実行ファイル** (ソースは配らない)。
+  dr_sbcl の `tools/build-dslc.lisp` で SBCL イメージとして焼いたもの。由来は `dslc.txt`。
+  これで配布先も `./build.sh core` で shader/*.lisp から shader.core を作り直せる
+  (出力は `build/<platform>/shader.core`。同梱 sqm 使用時はこちらが優先される)。
+  現状 **linux-x64 のみ**。mac/Windows 用は各 OS 上で焼く必要がある
 - 手順・ラッパ・診断・文書
 
 **入れない**
 - **レンダラーのソース (.c/.cpp/.h)** —
   本体は sqm リポジトリの持ち物。`.gitignore` が拒否する
 - `shader/` 以外の `.lisp` (DSL コンパイラ `interface/shader.lisp` やビルドスクリプト) —
-  dr_sbcl リポジトリの持ち物。`.gitignore` が拒否する
+  dr_sbcl リポジトリの持ち物。**コンパイラはソース非公開** (配るのは dslc 実行ファイルだけ)。
+  `.gitignore` が拒否する
 - 巨大な生成データ (`*.f32`、`examples/grids/`)
 
 ⚠ **`bin/` と `app/` と `shader/` は snapshot であって原本ではない。** 編集は必ず
@@ -116,6 +123,20 @@ Claude Code のシェルツールは**呼び出しごとに新しいシェル**�
 mac/Linux は同名の `.sh` (`./doctor.sh` など)。引数は同じ並び。
 
 ---
+
+## 自作シェーダーで shader.core を作り直す (dr_sbcl が無くてよい)
+
+```bash
+# 1. shader/<name>.lisp を書く (既存の shader/*.lisp が手本)
+# 2. shader/BUILD_LIST に <name> を 1 行足す
+./build.sh core          # 同梱 bin/<platform>/dslc で build/<platform>/shader.core を作る
+```
+
+- 要るもの: gcc (dslc はシェーダーを C に変換して gcc でコンパイル・リンクする)。SBCL は不要
+- dr_sbcl がある開発機でこの経路を試すときは `SQM_CORE_SOURCE=dslc ./build.sh core`
+- ⚠ shader.core は sqm と組で使う。dslc の由来 (`dslc.txt`) と sqm の由来 (`bin/VERSION.json`) が
+  大きく離れると ABI が合わず落ちうる
+- dslc を作り直す (開発機): `cd dr_sbcl && sbcl --script tools/build-dslc.lisp ../sqmexec/bin/<platform>/dslc`
 
 ## 2つの使い方 — 実行するだけ / ソースからビルドする
 

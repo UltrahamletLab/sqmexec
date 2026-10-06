@@ -49,6 +49,10 @@ else
   SQM_BIN_PATH="$BUNDLE_DIR/sqm"
   SHADER_CORE="$BUNDLE_DIR/shader.core"
   SQM_BINARY_SOURCE=bundled
+  # 配布先で ./build.sh core (同梱 dslc) を実行して作り直した core があればそちらを使う
+  if [ -f "$SQMEXEC_DIR/build/$SQM_PLATFORM/shader.core" ]; then
+    SHADER_CORE="$SQMEXEC_DIR/build/$SQM_PLATFORM/shader.core"
+  fi
 fi
 
 # sqm 実行に必要な環境変数をこのシェルに設定する
