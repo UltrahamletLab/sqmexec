@@ -23,12 +23,27 @@ done
 
 echo ""
 echo "[2] ツールチェイン"
+# 対処コマンドは OS で変える (mac: Homebrew / Linux: apt)
+if [ "$(uname -s)" = Darwin ]; then
+  FIX_CXX="xcode-select --install"; FIX_SBCL="brew install sbcl"
+else
+  FIX_CXX="sudo apt install build-essential"; FIX_SBCL="sudo apt install sbcl"
+fi
 if command -v c++ >/dev/null 2>&1; then ok "c++  $(c++ --version | head -1)"
-else bad "C++ コンパイラが無い"; problems+=("xcode-select --install"); fi
-if [ -d /opt/homebrew/opt/libomp ] || [ -d /usr/local/opt/libomp ]; then ok "libomp あり"
-else bad "libomp が無い (OpenMP 並列に必要)"; problems+=("brew install libomp"); fi
+else bad "C++ コンパイラが無い"; problems+=("$FIX_CXX"); fi
+if [ "$(uname -s)" = Darwin ]; then
+  # macOS: Apple clang は OpenMP を持たないので Homebrew libomp が要る
+  if [ -d /opt/homebrew/opt/libomp ] || [ -d /usr/local/opt/libomp ]; then ok "libomp あり"
+  else bad "libomp が無い (OpenMP 並列に必要)"; problems+=("brew install libomp"); fi
+else
+  # Linux: gcc の -fopenmp (libgomp) を使う。実際にリンクできるかで判定
+  if command -v c++ >/dev/null 2>&1 && \
+     echo 'int main(){return 0;}' | c++ -fopenmp -x c++ - -o /dev/null >/dev/null 2>&1; then
+    ok "OpenMP (gcc -fopenmp / libgomp) あり"
+  else bad "OpenMP が使えない (c++ -fopenmp が通らない)"; problems+=("sudo apt install build-essential"); fi
+fi
 if command -v sbcl >/dev/null 2>&1; then ok "sbcl $(sbcl --version)"
-else bad "SBCL が無い (shader.core のビルドに必要)"; problems+=("brew install sbcl"); fi
+else bad "SBCL が無い (shader.core のビルドに必要)"; problems+=("$FIX_SBCL"); fi
 if command -v python3 >/dev/null 2>&1; then
   ok "python3 $(python3 --version 2>&1)"
   if python3 -c "import numpy, skimage" 2>/dev/null; then ok "numpy / scikit-image あり"
