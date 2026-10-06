@@ -148,6 +148,10 @@ ANGLE→D3D11 経路は 25 ノードあたりからシェーダーのコンパ�
 自分の shader.core に組み込めます (同梱の DSL コンパイラ `bin/<platform>/dslc` を使用。
 現状 linux-x64 のみ)。
 
+**Linux (x64)** は `bin/linux-x64/` にレンダラー本体 `sqm` も同梱しています
+(Ubuntu 24.04 相当以上 = glibc 2.38+、AVX2 対応 CPU)。clone して `./doctor.sh` →
+`./render.sh` で動き、自作シェーダーの組み込み (`./build.sh core`) から描画まで一通りできます。
+
 **レンダラー本体と DSL コンパイラのソースは入っていません** (コンパイラは実行ファイルのみ同梱)。
 
 ## ソースからビルドしたい場合

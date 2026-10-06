@@ -1,5 +1,5 @@
 {
-    "updated": "2026-08-30",
+    "updated": "2026-10-06",
     "platforms": {
         "windows-x64": {
             "sqm": {
@@ -34,6 +34,25 @@
             "built_with": "Apple clang (arm64) / libomp 静的リンク / -march=native なし / -DDR_SHADER_CORE=\"shader.core\"",
             "runtime_deps": "macOS の システムライブラリのみ (Homebrew 不要 — 実測確認済み)。Apple Silicon 専用",
             "note": "ad-hoc 署名。ダウンロード後に xattr -dr com.apple.quarantine が要る"
+        },
+        "linux-x64": {
+            "sqm": {
+                "commit": "e6c8c41",
+                "subject": "Linux: -rdynamic で host シンボルを公開 (shader.core の dlopen が stf を解決できず DR ブリッジが無効になっていた)",
+                "bytes": 2884328
+            },
+            "shader_core": {
+                "commit": "1a9fbcb",
+                "subject": "dslc で sqmexec/shader/*.lisp (BUILD_LIST) から生成",
+                "bytes": 548208
+            },
+            "dslc": {
+                "commit": "1a9fbcb",
+                "bytes": 9935080,
+                "note": "DSL シェーダーコンパイラ (SBCL イメージ・ソース非公開)"
+            },
+            "built_with": "Ubuntu 24.04 GCC 13.3 / -O3 -ffast-math -march=x86-64-v3 / libgomp・libstdc++・libgcc 静的リンク / -rdynamic",
+            "runtime_deps": "glibc 2.38 以上 (Ubuntu 24.04 相当) + libz。CPU は AVX2 必須 (x86-64-v3)。doctor.sh が検査する"
         }
     },
     "app": {

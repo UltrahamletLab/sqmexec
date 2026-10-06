@@ -27,6 +27,10 @@ sqm の配布モデル (**ソースを公開せず、バイナリ + shader.core 
   これで配布先も `./build.sh core` で shader/*.lisp から shader.core を作り直せる
   (出力は `build/<platform>/shader.core`。同梱 sqm 使用時はこちらが優先される)。
   現状 **linux-x64 のみ**。mac/Windows 用は各 OS 上で焼く必要がある
+- `bin/linux-x64/sqm` + `shader.core` — Linux 用の同梱レンダラー (2026-10-06 追加)。
+  -march=x86-64-v3 (AVX2 必須)・glibc 2.38+。libgomp 等は静的リンク。
+  sqm/linux-build を worktree で焼いたもの (開発機の dist/sqm は -march=native なので配らない)。
+  doctor.sh は同梱モードを判定して CPU/共有ライブラリを検査する
 - 手順・ラッパ・診断・文書
 
 **入れない**
