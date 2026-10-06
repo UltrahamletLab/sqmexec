@@ -17,8 +17,10 @@ sqm の配布モデル (**ソースを公開せず、バイナリ + shader.core 
 - `app/sdfmodeler/` — ブラウザエディタ一式 (html/js/wasm/serve.py)
 - `scenes/smoke.ssq` — 自己診断用の最小シーン
 - `shader/*.lisp` — **シェーダーのソース** (dr_sbcl/shader/ の snapshot)。
-  2026-10-06 に方針変更して配布対象にした。材質の中身を読んだり、自作シェーダーの
-  手本にするため。由来は `shader/SOURCE` (dr_sbcl のコミット) に記録する
+  2026-10-06 に方針変更して **公開** した。目的は **ユーザーがシェーダースクリプトを
+  共有できること** (.lisp 1 本を渡せば相手も dslc で組み込める)。材質の中身を読む・
+  自作の手本にする用途も兼ねる。由来は `shader/SOURCE` (dr_sbcl のコミット) に記録する。
+  公開するのはシェーダーの .lisp だけ。レンダラーと DSL コンパイラのソースは非公開のまま
 - `shader/BUILD_LIST` — shader.core に入れるシェーダー名の一覧 (dr_sbcl/build-all.lisp から生成)
 - `bin/<platform>/dslc` — **DSL シェーダーコンパイラの実行ファイル** (ソースは配らない)。
   dr_sbcl の `tools/build-dslc.lisp` で SBCL イメージとして焼いたもの。由来は `dslc.txt`。
