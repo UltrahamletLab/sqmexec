@@ -1,0 +1,50 @@
+; turtle.ssq - smooth polygon turtle
+(scene
+  (background 0.42 0.66 0.82)
+  (camera (from 3.0 2.55 -6.7) (at 0 0.95 0) (up 0 1 0) (fov 38))
+  (light (pos -3.8 5.5 -4.0) (intensity 1.65) (color 1.0 0.95 0.86) (radius 0.75))
+  (light (pos 3.0 3.0 -1.5) (intensity 0.55) (color 0.70 0.84 1.0) (radius 1.0))
+  (light (pos 0.0 2.2 -4.5) (intensity 0.32) (color 0.86 0.94 1.0) (radius 1.2))
+
+  (object "ground"
+    (surface (color 0.25 0.43 0.23) (ka 0.28) (kd 0.64) (ks 0.04) (phong 8))
+    (sdf (plane (center 0 0 0) (normal 0 1 0) (offset 0))))
+
+  (object "turtle"
+    (surface (color 0.24 0.58 0.25) (ka 0.25) (kd 0.75) (ks 0.08) (phong 18)
+             (shader plastic) (param Ks 0.08) (param roughness 0.42))
+    (mesh (file "$SQM_ROOT/assets/turtle.obj") (smooth 1)
+      (group-surface "shell"
+        (color 0.20 0.42 0.17) (ka 0.26) (kd 0.76) (ks 0.10) (phong 0) (roi 1)
+        (shader hexshell) (param size 0.26) (param seam-width 0.22)
+        (param seam-color 0.07 0.13 0.05) (param vary 0.30) (param bump 0.55)
+        (param axis 1) (param Ks 0.12) (param roughness 0.35))
+      (group-surface "scutes"
+        (color 0.20 0.42 0.17) (ka 0.26) (kd 0.76) (ks 0.10) (phong 0) (roi 1)
+        (shader hexshell) (param size 0.26) (param seam-width 0.22)
+        (param seam-color 0.07 0.13 0.05) (param vary 0.30) (param bump 0.55)
+        (param axis 1) (param Ks 0.12) (param roughness 0.35))
+      (group-surface "rim"
+        (color 0.76 0.59 0.23) (ka 0.24) (kd 0.76) (ks 0.10) (phong 18)
+        (shader plastic) (param Ks 0.10) (param roughness 0.4))
+      (group-surface "plastron"
+        (color 0.82 0.66 0.37) (ka 0.25) (kd 0.75) (ks 0.06) (phong 14)
+        (shader plastic) (param Ks 0.06) (param roughness 0.48))
+      (group-surface "skin"
+        (color 0.29 0.67 0.31) (ka 0.28) (kd 0.74) (ks 0.08) (phong 18)
+        (shader plastic) (param Ks 0.08) (param roughness 0.4))
+      (group-surface "claws"
+        (color 0.91 0.81 0.57) (ka 0.25) (kd 0.72) (ks 0.06) (phong 14)
+        (shader plastic) (param Ks 0.06) (param roughness 0.46))
+      (group-surface "eyes"
+        (color 0.98 0.98 0.90) (ka 0.3) (kd 0.70) (ks 0.12) (phong 22)
+        (shader plastic) (param Ks 0.12) (param roughness 0.3))
+      (group-surface "pupils"
+        (color 0.025 0.045 0.035) (ka 0.18) (kd 0.68) (ks 0.18) (phong 24))
+      (group-surface "highlights"
+        (color 1.0 1.0 0.96) (ka 0.8) (kd 0.2) (ks 0.0) (phong 0))
+      (group-surface "cheeks"
+        (color 0.96 0.43 0.36) (ka 0.3) (kd 0.70) (ks 0.05) (phong 12))
+      (group-surface "mouth"
+        (color 0.12 0.08 0.055) (ka 0.2) (kd 0.7) (ks 0.04) (phong 8))))
+)

@@ -1,6 +1,6 @@
 ; fractal_mountain_polygon.ssq - low-poly fractal mountain
 (scene
-  (background 0.05 0.10 0.20)
+  (background 0.08 0.16 0.22)
   (camera (from 7.0 4.0 -8.5) (at 0 1.55 2.8) (up 0 1 0) (fov 46))
   (light (pos -4.0 6.0 -4.5) (intensity 1.75) (color 1.0 0.92 0.80) (radius 0.8))
   (light (pos 4.0 3.0 -1.5) (intensity 0.55) (color 0.42 0.62 1.0) (radius 1.0))
@@ -8,14 +8,14 @@
   (object "sky"
     (surface (color 1 1 1) (ka 1.0) (kd 0.0) (ks 0.0) (phong 0) (roi 1.0) (shader fakesky2)
       (param sundir -0.42 0.70 0.58) (param zenith-color 0.22 0.40 0.62)
-      (param horizon-color 0.82 0.80 0.74) (param sun-color 1.00 0.95 0.82)
-      (param sun-size 900) (param sun-glow 6) (param cloud-cover 0.38)
-      (param cloud-sharp 0.22) (param cloud-scale 1.8) (param horizon-falloff 0.42)
+      (param horizon-color 0.14 0.27 0.22) (param sun-color 1.00 0.95 0.82)
+      (param sun-size 900) (param sun-glow 6) (param cloud-cover 0.28)
+      (param cloud-sharp 0.18) (param cloud-scale 1.8) (param horizon-falloff 0.88)
       (param exposure 0.58))
     (mesh (file "$SQM_ROOT/assets/sky_sphere.obj") (scale 60 60 60)))
 
   (object "valley"
-    (surface (color 0.08 0.22 0.14) (ka 0.24) (kd 0.76) (ks 0.04) (phong 8))
+    (surface (color 0.14 0.27 0.22) (ka 0.30) (kd 0.70) (ks 0.04) (phong 8))
     (sdf (plane (center 0 0 0) (normal 0 1 0) (offset 0))))
 
   (object "polygon-mountain"
