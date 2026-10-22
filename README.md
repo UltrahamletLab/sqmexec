@@ -142,9 +142,13 @@ ANGLE→D3D11 経路は 25 ノードあたりからシェーダーのコンパ�
 | `CLAUDE.md` | **引継ぎ文書 (本体)**。落とし穴の対応表つき |
 | `doctor` / `build` / `render` / `serve` / `publish` | 各種スクリプト (.ps1 / .sh) |
 
-**レンダラーとシェーダーのソースは入っていません** (本体は
-[sqm](https://github.com/ultrahamlet/sqm)、シェーダーは
-[dr_sbcl](https://github.com/ultrahamlet/dr_sbcl))。
+**シェーダーのソース (`shader/*.lisp`) は公開しています。** 自作のシェーダーを
+ユーザー同士で共有できるようにするためです。`.lisp` を 1 本渡せば、受け取った側は
+`shader/` に置いて `shader/BUILD_LIST` に名前を足し、`./build.sh core` で
+自分の shader.core に組み込めます (同梱の DSL コンパイラ `bin/<platform>/dslc` を使用。
+現状 linux-x64 のみ)。
+
+**レンダラー本体と DSL コンパイラのソースは入っていません** (コンパイラは実行ファイルのみ同梱)。
 
 ## ソースからビルドしたい場合
 
