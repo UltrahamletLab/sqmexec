@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: four-balls-split-and-merge
+expected_outcome: |
+  場の端 (0..1) を越えない軌道半径・strength が、予算の計算 (r_iso = sqrt(strength/(iso+subtract))、
+  最大到達 ≤ 0.47) を根拠に選ばれている。分離時に隣接 2 球の中点の場が isolation を下回る
+  ことが数値で示され、大きさの調整は strength ではなく scale で行われている。
+  根拠が HTML のコメントに残っている。
