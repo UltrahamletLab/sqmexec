@@ -4,8 +4,24 @@
     {
       "name": "promptdb",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["promptdb/server.py", "--port", "8700"],
+      "runtimeArgs": [
+        "promptdb/server.py",
+        "--port",
+        "8700"
+      ],
       "port": 8700
+    },
+    {
+      "name": "slshader",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8643",
+        "--directory",
+        "C:/Users/hakub/sqm/web/slshader"
+      ],
+      "port": 8643
     }
   ]
 }
