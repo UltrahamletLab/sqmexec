@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "promptdb",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["promptdb/server.py", "--port", "8700"],
+      "port": 8700
+    }
+  ]
+}

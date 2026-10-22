@@ -49,3 +49,6 @@ app/sdfmodeler/.claude/
 *_out.png
 sqmexec_*.png
 .DS_Store
+
+# --- promptdb の生成物 (元テキストから再生成できる。59 MB) ---
+promptdb/prompts.db
