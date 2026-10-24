@@ -18,6 +18,8 @@ import {
 } from './anchor.js';
 import { scaleAxesFor, applyScale } from './scale.js';
 import { isPng, readPngScene } from './pngmeta.js';
+import { startBridge } from './bridge.js';
+import { slMissing, slLoad, slErrors } from './slshader.js';
 import { fmt, parseAll } from './sexpr.js';
 import {
   fnv1a, gridForObject, spanOfSpheres, mergeMeshes, MeshCache,
@@ -645,6 +647,14 @@ function schedulePickProg() {
 
 function rebuild() {
   sticky = null;
+  if (slMissing(doc).length) {   /* (shader NAME) の .lisp シェーダーを取得してから焼き直す */
+    slLoad(doc).then(ch => {
+      if (!ch) return;
+      rebuild();
+      const er = slErrors();
+      if (er.length) { console.warn(er); setStatus('シェーダー: ' + er[er.length - 1], true); }
+    });
+  }
   scheduleMesh();          /* uniform 超過で早期 return しても メッシュ側は更新する */
   scheduleBlobMesh();      /* native blob は WASM 再メッシュ (GLSL に出ない) */
   refreshObjMeshes();      /* mesh(OBJ) も GLSL に出ない — ラスタ表示を同期 */
@@ -2663,9 +2673,11 @@ function importText(text, fileName = '') {
     } else {
       setStatus('読み込みました: ' + (fileName || '(テキスト)'));
     }
+    return true;
   } catch (e) {
     console.error(e);
     setStatus('読み込み失敗: ' + e.message, true);
+    return false;
   }
 }
 
@@ -3301,3 +3313,15 @@ function init() {
 }
 
 init();
+
+startBridge({
+  getScene() { doc.camera = viewer.getCamera(); return serializeScene(doc, doc.camera); },
+  setScene: importText,
+  getDocJson: () => docToJSON(doc),
+  undo, redo,
+  getStatus() { const el = $('#status'); return { text: el.textContent, error: el.classList.contains('err') }; },
+  screenshot: () => viewer.snapshotPNG(),
+  get doc() { return doc; },
+  get viewer() { return viewer; },
+  mutated, rebuild, renderTree, renderInspector,
+});

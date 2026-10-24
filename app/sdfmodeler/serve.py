@@ -15,8 +15,63 @@ import re
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
+
+
+class Bridge:
+    """MCP (mcp_server.py) → ブラウザのエディタへコマンドを中継するキュー。
+    MCP が POST /__bridge__/cmd で投入 → ブラウザが GET /__bridge__/poll でロングポール
+    して実行 → POST /__bridge__/result で返す → cmd 呼び出しが結果を返して終わる。"""
+    def __init__(self):
+        self.cv = threading.Condition()
+        self.queue = []          # 未取得コマンド
+        self.results = {}        # id -> 結果
+        self.last_poll = 0.0     # ブラウザが最後にポールした時刻
+        self.seq = 0
+
+    def connected(self):
+        return time.time() - self.last_poll < 30
+
+    def submit(self, cmd, args, timeout):
+        with self.cv:
+            if not self.connected():
+                return {"ok": False, "error": "ブラウザのエディタが接続していません。"
+                        "http://localhost:<port> を開いてください"}
+            self.seq += 1
+            cid = str(self.seq)
+            self.queue.append({"id": cid, "cmd": cmd, "args": args})
+            self.cv.notify_all()
+            end = time.time() + timeout
+            while cid not in self.results:
+                left = end - time.time()
+                if left <= 0:
+                    self.queue = [c for c in self.queue if c["id"] != cid]
+                    return {"ok": False, "error": "タイムアウト (ブラウザが応答しません)"}
+                self.cv.wait(left)
+            return self.results.pop(cid)
+
+    def poll(self, wait):
+        with self.cv:
+            end = time.time() + wait
+            while True:
+                self.last_poll = time.time()
+                if self.queue:
+                    return self.queue.pop(0)
+                left = end - time.time()
+                if left <= 0:
+                    return {}
+                self.cv.wait(min(left, 5))
+
+    def result(self, cid, res):
+        with self.cv:
+            self.results[cid] = res
+            self.cv.notify_all()
+
+
+BRIDGE = Bridge()
 
 
 class NoStoreHandler(SimpleHTTPRequestHandler):
@@ -35,7 +90,50 @@ class NoStoreHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _slshader_root(self):
+        cands = [os.environ.get("SDFM_SLSHADER"),
+                 os.path.join(self.directory, "slshader"),
+                 os.path.join(self.directory, "..", "web", "slshader")]
+        for c in cands:
+            if c and os.path.isfile(os.path.join(c, "sl_runtime.js")):
+                return os.path.abspath(c)
+        return None
+
+    def _serve_slshader(self, path):
+        """.lisp シェーダーのプレビュー用: sl_runtime.js の前置き GLSL と gen/<name>.sl.js を返す。"""
+        root = self._slshader_root()
+        if not root:
+            return self._send_json(404, {"error": "slshader (sl_runtime.js) が見つかりません。"
+                                         "SDFM_SLSHADER で場所を指定してください"})
+        if path == "/__slprelude__":
+            src = open(os.path.join(root, "sl_runtime.js"), encoding="utf-8").read()
+            m = re.search(r"const PRELUDE = /\* glsl \*/ `(.*?)`;\n", src, re.S)
+            if not m:
+                return self._send_json(500, {"error": "sl_runtime.js に PRELUDE が見つかりません"})
+            return self._send_text(200, m.group(1), "text/plain; charset=utf-8")
+        name = path[len("/__slgen__/"):]
+        if not re.fullmatch(r"[A-Za-z0-9_\-]+", name):
+            return self._send_json(400, {"error": "invalid shader name"})
+        f = os.path.join(root, "gen", name + ".sl.js")
+        if not os.path.isfile(f):
+            return self._send_json(404, {"error": "gen/%s.sl.js がありません (dr_sbcl の glsl-build.lisp で生成)" % name})
+        return self._send_text(200, open(f, encoding="utf-8").read(), "text/javascript; charset=utf-8")
+
+    def _send_text(self, code, s, ctype):
+        body = s.encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
     def do_GET(self):
+        path_ = urlparse(self.path).path
+        if path_ == "/__slprelude__" or path_.startswith("/__slgen__/"):
+            return self._serve_slshader(path_)
+        if urlparse(self.path).path == "/__bridge__/poll":
+            return self._send_json(200, BRIDGE.poll(20))
+        if urlparse(self.path).path == "/__bridge__/status":
+            return self._send_json(200, {"connected": BRIDGE.connected()})
         # examples/ の .ssq 一覧 (ユーザー保存分を含む) を JSON で返す
         if urlparse(self.path).path == "/__examples__":
             try:
@@ -98,6 +196,17 @@ class NoStoreHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         # 現在のモデルを examples/<name>.ssq に保存
         parsed = urlparse(self.path)
+        if parsed.path in ("/__bridge__/cmd", "/__bridge__/result"):
+            length = int(self.headers.get("Content-Length", 0))
+            try:
+                body = json.loads(self.rfile.read(length).decode("utf-8")) if length else {}
+            except ValueError:
+                return self._send_json(400, {"ok": False, "error": "invalid JSON"})
+            if parsed.path == "/__bridge__/result":
+                BRIDGE.result(str(body.get("id")), body.get("result") or {})
+                return self._send_json(200, {"ok": True})
+            return self._send_json(200, BRIDGE.submit(
+                str(body.get("cmd", "")), body.get("args") or {}, float(body.get("timeout", 60))))
         if parsed.path == "/__save__":
             qs = parse_qs(parsed.query)
             raw = (qs.get("name", [""])[0]) or ""

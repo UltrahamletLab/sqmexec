@@ -2,6 +2,7 @@
  * 距離関数・CSG・変換は sqm/dist/sdf.cpp と同一式 (プレビュー = 本レンダの近似一致)。
  * 数値パラメータは全て uniform float uPar[] に載せ、値変更は再コンパイル不要。 */
 import { SCHEMA, eulerToMat, surfaceColor } from './model.js';
+import { slGlsl } from './slshader.js';
 
 const D2R = Math.PI / 180;
 
@@ -1479,6 +1480,7 @@ export function buildProgram(doc, focusSet, opts) {
   const colRows = colTexRows(Math.max(1, layout.order.length));
   const visObjs = doc.objects.filter(o => o.visible);
   const nObj = Math.max(1, visObjs.length);
+  const sl = slGlsl(visObjs);   /* (shader NAME) 付き object の .lisp シェーダー GLSL (取得済みのみ) */
 
   /* per-object クリーン関数 (emit がガードを layout.guards に積む) */
   const objFns = [];
@@ -1685,6 +1687,7 @@ ${wantAO ? `float calcAO(vec3 p, vec3 n){
   return clamp(1.0 - 2.2 * occ, 0.0, 1.0);
 }` : '/* AO OFF: calcAO は生成していない (同上) */'}
 
+${sl.decl}
 vec3 shade(vec3 ro, vec3 rd, float t, float m, out float selD){
   vec3 p = ro + rd * t;
   vec3 n = calcNormal(p, t);
@@ -1701,7 +1704,7 @@ vec3 shade(vec3 ro, vec3 rd, float t, float m, out float selD){
   } else {
     alb = uObjCol[int(m + 0.5)];
   }
-  float ao = ${wantAO ? 'uFast > 0.5 ? 1.0 : calcAO(p, n)' : '1.0'};   /* 操作中はAOスキップ */
+${sl.cases}  float ao = ${wantAO ? 'uFast > 0.5 ? 1.0 : calcAO(p, n)' : '1.0'};   /* 操作中はAOスキップ */
   vec3 col = alb * mix(vec3(0.22), uBg + 0.12, 0.55) * 0.55 * ao;  /* 環境項 */
   for (int i = 0; i < 4; i++) {
     if (i >= uNLights) break;
